@@ -1,0 +1,129 @@
+@startuml
+
+!theme plain
+hide empty members
+skinparam class {
+    BackgroundColor White
+    ArrowColor Black
+    BorderColor Black
+}
+
+' ==========================================
+' MODULE 1: AUTHENTICATION & PROJECT CONTEXT
+' ==========================================
+package "Identity & Project Access" {
+    class User {
+        +Long id
+        +String username
+        +String email
+    }
+
+    class Project {
+        +Long id
+        +String name
+        +String key
+    }
+
+    class ProjectMember {
+        +Long id
+        +ProjectRole role
+        --
+        (Links User to Project)
+    }
+
+    enum ProjectRole {
+        PRODUCT_OWNER
+        SCRUM_MASTER
+        DEVELOPER
+    }
+}
+
+' ==========================================
+' MODULE 2: PLANNING (BACKLOG -> EPICS -> STORIES)
+' ==========================================
+package "Agile Planning" {
+    class ProductBacklog {
+        +Long id
+    }
+
+    class Epic {
+        +Long id
+        +String title
+    }
+
+    class UserStory {
+        +Long id
+        +String title
+        +String asRole
+        +String iWant
+        +String soThat
+        +Integer storyPoints
+    }
+
+    class AcceptanceScenario {
+        +Long id
+        +String given
+        +String when
+        +String then
+    }
+}
+
+' ==========================================
+' MODULE 3: EXECUTION (SPRINT TEAM & MULTI-ASSIGNMENT)
+' ==========================================
+package "Agile Execution" {
+    class Sprint {
+        +Long id
+        +String name
+        +Date startDate
+        +Date endDate
+        +boolean isActive
+    }
+
+    class KanbanColumn {
+        +Long id
+        +String name
+        +Integer position
+    }
+
+    class Task {
+        +Long id
+        +String title
+        +Integer hoursEstimate
+        --
+        Can have multiple assignees
+    }
+}
+
+' ==========================================
+' RELATIONSHIPS
+' ==========================================
+
+' 1. Project Structure
+User "1" -- "*" ProjectMember : belongs to
+Project "1" *-- "*" ProjectMember : has members
+Project "1" *-- "1" ProductBacklog : owns
+Project "1" *-- "*" KanbanColumn : defines workflow
+
+' 2. Backlog Management
+ProductBacklog "1" *-- "*" Epic : contains
+Epic "1" *-- "*" UserStory : groups
+UserStory "1" *-- "*" AcceptanceScenario : tested by
+
+' 3. Sprint Management & THE TEAM
+Project "1" *-- "*" Sprint : organizes
+Sprint "1" o-- "*" UserStory : includes
+
+' CHANGE 1: SPRINT TEAM
+' A Sprint has a specific list of members (The Scrum Team for this timeline)
+Sprint "*" o-- "*" ProjectMember : <color:red><b>has active team</b></color>
+
+' 4. Task Execution
+UserStory "1" *-- "*" Task : decomposed into
+Task "*" --> "1" KanbanColumn : status
+
+' CHANGE 2: MULTI-USER ASSIGNMENT
+' A Task can be assigned to MANY Project Members (Pair Programming / Swarming)
+Task "*" --> "*" ProjectMember : <color:red><b>assigned to (Multiple)</b></color>
+
+@enduml

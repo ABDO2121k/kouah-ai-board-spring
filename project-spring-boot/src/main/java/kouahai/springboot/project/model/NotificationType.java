@@ -1,0 +1,19 @@
+package kouahai.springboot.project.model;
+
+public enum NotificationType {
+    PROJECT_CREATED,
+    PROJECT_UPDATED,
+    PROJECT_DELETED,
+    PROJECT_INVITATION,
+    MEMBER_ADDED,
+    MEMBER_REMOVED,
+    SPRINT_CREATED,
+    SPRINT_STARTED,
+    SPRINT_CLOSED,
+    TASK_CREATED,
+    TASK_UPDATED,
+    TASK_ASSIGNED,
+    TASK_COMPLETED,
+    COMMENT_ADDED,
+    GENERAL
+}

@@ -1,0 +1,145 @@
+@startuml
+
+!theme plain
+hide empty members
+skinparam class {
+    BackgroundColor White
+    ArrowColor Black
+    BorderColor Black
+}
+
+' ==========================================
+' MODULE 1: AUTHENTICATION & CONTEXT
+' ==========================================
+package "Identity & Access Context" {
+    class User {
+        +Long id
+        +String username
+        +String email
+        +String passwordHash
+        --
+        Methods:
+        +login()
+        +register()
+    }
+
+    class Project {
+        +Long id
+        +String name
+        +String key
+        +String description
+        +Date createdDate
+    }
+
+    class ProjectMember {
+        +Long id
+        +Date joinedAt
+        +ProjectRole role
+    }
+
+    enum ProjectRole {
+        PRODUCT_OWNER
+        SCRUM_MASTER
+        DEVELOPER
+    }
+}
+
+' ==========================================
+' MODULE 2: AGILE PLANNING (BACKLOG & BDD)
+' ==========================================
+package "Planning & Requirements" {
+    class ProductBacklog {
+        +Long id
+        +String name
+    }
+
+    class Epic {
+        +Long id
+        +String title
+        +String description
+        +Date targetDate
+    }
+
+    class UserStory {
+        +Long id
+        +String title
+        -- Gherkin Definition --
+        +String asRole  (En tant que)
+        +String iWant   (Je veux)
+        +String soThat  (Afin de)
+        -- Agile Metrics --
+        +Integer storyPoints
+        +Priority priority
+        +Status status
+    }
+
+    class AcceptanceScenario {
+        +Long id
+        +String title
+        -- BDD Syntax --
+        +String givenCondition
+        +String whenAction
+        +String thenResult
+    }
+}
+
+' ==========================================
+' MODULE 3: EXECUTION (SPRINTS & TASKS)
+' ==========================================
+package "Execution & Tracking" {
+    class Sprint {
+        +Long id
+        +String name
+        +Date startDate
+        +Date endDate
+        +String sprintGoal
+        +boolean isActive
+    }
+
+    class KanbanColumn {
+        +Long id
+        +String name (e.g., "To Do", "In QA")
+        +Integer positionIndex
+        +boolean isDoneStatus
+    }
+
+    class Task {
+        +Long id
+        +String title
+        +String description
+        +Integer estimatedHours
+    }
+}
+
+' ==========================================
+' RELATIONSHIPS
+' ==========================================
+
+' 1. User & Project Membership (Multi-Tenant Logic)
+User "1" -- "*" ProjectMember : belongs to
+Project "1" *-- "*" ProjectMember : has members
+ProjectMember --> ProjectRole : has specific role
+
+' 2. Backlog Hierarchy [cite: 66, 70]
+Project "1" *-- "1" ProductBacklog : owns
+ProductBacklog "1" *-- "*" Epic : contains
+Epic "1" *-- "*" UserStory : groups
+
+' 3. BDD / Gherkin Integration (Teacher Remark)
+UserStory "1" *-- "*" AcceptanceScenario : validated by
+
+' 4. Sprint Management [cite: 78, 86]
+Project "1" *-- "*" Sprint : organizes
+' Dynamic Team: Specific members are assigned to a specific Sprint
+Sprint "*" o-- "*" ProjectMember : sprint_team
+
+' 5. Execution & Kanban [cite: 51, 68]
+Sprint "1" o-- "*" UserStory : includes (Sprint Backlog)
+UserStory "1" *-- "*" Task : decomposed into
+
+' 6. Dynamic Kanban Board (Teacher Remark)
+Project "1" *-- "*" KanbanColumn : defines workflow
+Task "*" --> "1" KanbanColumn : current status
+Task "*" --> "0..1" ProjectMember : assigned to
+
+@enduml
